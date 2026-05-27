@@ -21,7 +21,7 @@ const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 const PRICE_RANGE_RATE = 0.1;
 
 const initialForm = {
-  Bairro: "Centro",
+  Bairro: "CollgCr",
   Qualidade: 7,
   ClasseZona: "RL",
   AreaConstruida: 1710,
@@ -47,76 +47,82 @@ const numericFields = new Set([
 
 const selectOptions = {
   Bairro: [
-    "Centro",
-    "Jardim Aeroporto",
-    "Jardim Bela Vista",
-    "Jardim Boa Esperan\u00e7a",
-    "Jardim Cana\u00e3",
-    "Jardim Eldorado",
-    "Jardim Europa",
-    "Jardim Fl\u00f3rida",
-    "Jardim Ipanema",
-    "Jardim Margarida",
-    "Jardim Nova Botucatu",
-    "Jardim Nova Igua\u00e7u",
-    "Jardim Para\u00edso",
-    "Jardim Petr\u00f3polis",
-    "Jardim Redentor",
-    "Jardim Santa Luzia",
-    "Jardim S\u00e3o Judas Tadeu",
-    "Jardim das Flores",
-    "Recanto dos Pinheiros",
-    "Rubi\u00e3o J\u00fanior",
-    "Vila Independ\u00eancia",
-    "Vila Real",
-    "Vila S\u00e3o Francisco",
-    "Vila Universit\u00e1ria",
-    "Vitoriana",
+    { value: "Blmngtn", label: "Blmngtn - Bloomington Heights" },
+    { value: "Blueste", label: "Blueste - Bluestem" },
+    { value: "BrDale", label: "BrDale - Briardale" },
+    { value: "BrkSide", label: "BrkSide - Brookside" },
+    { value: "ClearCr", label: "ClearCr - Clear Creek" },
+    { value: "CollgCr", label: "CollgCr - College Creek" },
+    { value: "Crawfor", label: "Crawfor - Crawford" },
+    { value: "Edwards", label: "Edwards" },
+    { value: "Gilbert", label: "Gilbert" },
+    { value: "IDOTRR", label: "IDOTRR - Iowa DOT and Rail Road" },
+    { value: "MeadowV", label: "MeadowV - Meadow Village" },
+    { value: "Mitchel", label: "Mitchel - Mitchell" },
+    { value: "NAmes", label: "NAmes - North Ames" },
+    { value: "NoRidge", label: "NoRidge - Northridge" },
+    { value: "NPkVill", label: "NPkVill - Northpark Villa" },
+    { value: "NridgHt", label: "NridgHt - Northridge Heights" },
+    { value: "NWAmes", label: "NWAmes - Northwest Ames" },
+    { value: "OldTown", label: "OldTown - Old Town" },
+    { value: "SWISU", label: "SWISU - South & West of Iowa State University" },
+    { value: "Sawyer", label: "Sawyer" },
+    { value: "SawyerW", label: "SawyerW - Sawyer West" },
+    { value: "Somerst", label: "Somerst - Somerset" },
+    { value: "StoneBr", label: "StoneBr - Stone Brook" },
+    { value: "Timber", label: "Timberland" },
+    { value: "Veenker", label: "Veenker" },
   ],
-  ClasseZona: ["RL", "RM", "FV", "RH", "C (all)"],
+  ClasseZona: [
+    { value: "RL", label: "Residencial de baixa densidade" },
+    { value: "RM", label: "Residencial de m\u00e9dia densidade" },
+    { value: "FV", label: "Vila flutuante residencial" },
+    { value: "RH", label: "Residencial de alta densidade" },
+    { value: "C (all)", label: "Comercial" },
+  ],
   ClasseImovel: [
-    "20",
-    "30",
-    "40",
-    "45",
-    "50",
-    "60",
-    "70",
-    "75",
-    "80",
-    "85",
-    "90",
-    "120",
-    "160",
-    "180",
-    "190",
+    { value: "20", label: "1 pavimento, 1946 ou mais novo" },
+    { value: "30", label: "1 pavimento, 1945 ou anterior" },
+    { value: "40", label: "1 pavimento com s\u00f3t\u00e3o acabado" },
+    { value: "45", label: "1,5 pavimento inacabado" },
+    { value: "50", label: "1,5 pavimento acabado" },
+    { value: "60", label: "2 pavimentos, 1946 ou mais novo" },
+    { value: "70", label: "2 pavimentos, 1945 ou anterior" },
+    { value: "75", label: "2,5 pavimentos" },
+    { value: "80", label: "N\u00edveis divididos ou m\u00faltiplos" },
+    { value: "85", label: "Entrada em n\u00edvel dividido" },
+    { value: "90", label: "Duplex" },
+    { value: "120", label: "Condom\u00ednio planejado, 1 pavimento" },
+    { value: "160", label: "Condom\u00ednio planejado, 2 pavimentos" },
+    { value: "180", label: "Condom\u00ednio planejado, multin\u00edvel" },
+    { value: "190", label: "Convers\u00e3o para duas fam\u00edlias" },
   ],
   QualidadeCozinha: [
-    { value: "Ex", label: "Ex - Excelente" },
-    { value: "Gd", label: "Gd - Boa" },
-    { value: "TA", label: "TA - Media" },
-    { value: "Fa", label: "Fa - Regular" },
-    { value: "Po", label: "Po - Ruim" },
+    { value: "Ex", label: "Excelente" },
+    { value: "Gd", label: "Boa" },
+    { value: "TA", label: "M\u00e9dia" },
+    { value: "Fa", label: "Regular" },
+    { value: "Po", label: "Ruim" },
     { value: "Ausente", label: "Ausente" },
   ],
   Exterior1: [
-    "AsbShng",
-    "BrkComm",
-    "BrkFace",
-    "CBlock",
-    "CemntBd",
-    "HdBoard",
-    "ImStucc",
-    "MetalSd",
-    "Plywood",
-    "Stucco",
-    "VinylSd",
-    "Wd Sdng",
-    "WdShing",
+    { value: "AsbShng", label: "Telhas de amianto" },
+    { value: "BrkComm", label: "Tijolo comum" },
+    { value: "BrkFace", label: "Tijolo aparente" },
+    { value: "CBlock", label: "Bloco de concreto" },
+    { value: "CemntBd", label: "Placa ciment\u00edcia" },
+    { value: "HdBoard", label: "Chapa de madeira prensada" },
+    { value: "ImStucc", label: "Estuque imita\u00e7\u00e3o" },
+    { value: "MetalSd", label: "Revestimento met\u00e1lico" },
+    { value: "Plywood", label: "Compensado" },
+    { value: "Stucco", label: "Estuque" },
+    { value: "VinylSd", label: "Revestimento vin\u00edlico" },
+    { value: "Wd Sdng", label: "Revestimento de madeira" },
+    { value: "WdShing", label: "Telhas de madeira" },
   ],
   ArCentral: [
     { value: "Y", label: "Sim" },
-    { value: "N", label: "Nao" },
+    { value: "N", label: "N\u00e3o" },
   ],
 };
 
@@ -218,8 +224,8 @@ export default function App() {
     () => [
       {
         icon: Ruler,
-        label: "Area",
-        value: `${payload.AreaConstruida} m2`,
+        label: "\u00c1rea",
+        value: `${payload.AreaConstruida} m\u00b2`,
       },
       {
         icon: CheckCircle2,
@@ -229,12 +235,12 @@ export default function App() {
       {
         icon: MapPin,
         label: "Bairro",
-        value: payload.Bairro,
+        value: getOptionLabel("Bairro", payload.Bairro),
       },
       {
         icon: Building2,
         label: "Zona",
-        value: payload.ClasseZona,
+        value: getOptionLabel("ClasseZona", payload.ClasseZona),
       },
       {
         icon: CheckCircle2,
@@ -248,13 +254,13 @@ export default function App() {
       },
       {
         icon: Building2,
-        label: "Exterior",
-        value: payload.Exterior1,
+        label: "Material externo",
+        value: getOptionLabel("Exterior1", payload.Exterior1),
       },
       {
         icon: Home,
-        label: "Classe",
-        value: payload.ClasseImovel,
+        label: "Tipo de im\u00f3vel",
+        value: getOptionLabel("ClasseImovel", payload.ClasseImovel),
       },
       {
         icon: Car,
@@ -286,7 +292,7 @@ export default function App() {
       });
 
       if (!response.ok) {
-        throw new Error("Nao foi possivel gerar a previsao.");
+        throw new Error("N\u00e3o foi poss\u00edvel gerar a previs\u00e3o.");
       }
 
       const data = await response.json();
@@ -321,7 +327,7 @@ export default function App() {
                 Equipe Verde
               </p>
               <h1 className="text-xl font-bold text-ink sm:text-2xl">
-                Estimador de preco de imoveis
+                Estimador de pre&ccedil;o de im&oacute;veis
               </h1>
             </div>
           </div>
@@ -329,7 +335,7 @@ export default function App() {
           <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-slate-600">
             <span className="inline-flex h-10 items-center gap-2 rounded-lg border border-emerald-100 bg-emerald-50 px-3 text-emerald-800">
               <Sparkles className="h-4 w-4" aria-hidden="true" />
-              9 features
+              9 campos
             </span>
             <span className="inline-flex h-10 items-center gap-2 rounded-lg border border-slate-200 bg-white px-3">
               <Wifi className="h-4 w-4 text-emerald-600" aria-hidden="true" />
@@ -346,9 +352,11 @@ export default function App() {
         >
           <div className="mb-5 flex flex-col gap-3 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h2 className="text-lg font-bold text-ink">Dados do imovel</h2>
+              <h2 className="text-lg font-bold text-ink">
+                Dados do im&oacute;vel
+              </h2>
               <p className="mt-1 text-sm text-slate-500">
-                9 campos mais influentes no modelo de predicao.
+                9 campos mais influentes no modelo de predi&ccedil;&atilde;o.
               </p>
             </div>
             <div className="flex gap-2">
@@ -395,7 +403,7 @@ export default function App() {
             />
             <Field
               icon={Ruler}
-              label="Area construida"
+              label={"\u00c1rea constru\u00edda"}
               name="AreaConstruida"
               type="number"
               value={form.AreaConstruida}
@@ -417,14 +425,14 @@ export default function App() {
             />
             <Field
               icon={Building2}
-              label="Exterior"
+              label="Material externo"
               name="Exterior1"
               value={form.Exterior1}
               onChange={handleChange}
             />
             <Field
               icon={Home}
-              label="Classe"
+              label={"Tipo de im\u00f3vel"}
               name="ClasseImovel"
               value={form.ClasseImovel}
               onChange={handleChange}
@@ -449,7 +457,7 @@ export default function App() {
                 </span>
                 <div>
                   <p className="text-sm font-semibold text-emerald-100">
-                    Preco previsto
+                    Pre&ccedil;o previsto
                   </p>
                   <p className="text-xs font-medium text-slate-300">
                     Modelo {result?.model_version || "aguardando"}
@@ -472,10 +480,10 @@ export default function App() {
                     <div className="mt-6 border-t border-white/10 pt-5">
                       <div className="flex items-center gap-2 text-sm font-semibold text-emerald-100">
                         <Gauge className="h-4 w-4" aria-hidden="true" />
-                        Faixa de referencia
+                        Faixa de refer&ecirc;ncia
                       </div>
                       <p className="mt-2 text-sm leading-6 text-slate-200">
-                        Esse imovel varia entre{" "}
+                        Esse im&oacute;vel varia entre{" "}
                         <span className="font-bold text-white">
                           {formatCurrency(priceRange.min)}
                         </span>{" "}
@@ -503,7 +511,7 @@ export default function App() {
                 <div className="grid min-h-48 place-items-center border-t border-white/10 pt-5 text-center">
                   <div>
                     <p className="text-3xl font-bold leading-tight text-slate-100">
-                      Aguardando calculo
+                      Aguardando c&aacute;lculo
                     </p>
                     <p className="mt-3 text-sm font-medium text-slate-300">
                       Sem resultado por enquanto.
@@ -519,7 +527,7 @@ export default function App() {
               <div className="flex items-start gap-3">
                 <AlertCircle className="mt-0.5 h-5 w-5" aria-hidden="true" />
                 <div>
-                  <h2 className="font-bold">Erro na previsao</h2>
+                  <h2 className="font-bold">Erro na previs&atilde;o</h2>
                   <p className="mt-1 text-sm">{error}</p>
                 </div>
               </div>
