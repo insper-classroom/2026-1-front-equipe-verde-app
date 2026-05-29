@@ -63,7 +63,7 @@ function Empty({ msg = "Sem dados ainda" }) {
 }
 
 function getValidationMetrics(validation) {
-  return validation?.so_normais || validation?.todos || {};
+  return validation?.todos || validation?.so_normais || {};
 }
 
 function HBar({ data, valueKey, nameKey, color = EMERALD, money = false, height = 280 }) {
@@ -154,8 +154,8 @@ export default function Dashboard() {
 
       {/* KPIs */}
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Kpi label="Transações validadas" value={fmtNum(validationCount)} icon={TrendingUp}
-             hint="somente validações" />
+        <Kpi label="Transações no dataset" value={fmtNum(validationCount)} icon={TrendingUp}
+             hint="inclui todos os tipos e condições de venda" />
         <Kpi label="Taxa de sucesso" value={successRate ? `${successRate}%` : "—"} icon={Activity} accent="blue"
              hint={status.error_count != null ? `${fmtNum(status.error_count)} erros` : null} />
         <Kpi label="Latência p95" value={lat.p95_ms != null ? `${lat.p95_ms} ms` : "—"} icon={Gauge} accent="blue"
@@ -189,7 +189,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
           )}
         </Card>
-        <Card title="Distribuição dos preços previstos" icon={TrendingUp} subtitle={`${fmtNum(priceDistributionCount)} validações`}>
+        <Card title="Distribuição dos preços previstos" icon={TrendingUp} subtitle={`${fmtNum(priceDistributionCount)} transações`}>
           {!dist.count ? <Empty /> : (
             <div className="space-y-3 py-4">
               {[["Mínimo", dist.min], ["P25", dist.p25], ["Mediana", dist.median], ["P75", dist.p75], ["Máximo", dist.max]].map(([k, v]) => (
