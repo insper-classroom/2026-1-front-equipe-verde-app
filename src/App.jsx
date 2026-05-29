@@ -22,7 +22,10 @@ import {
 import { API_URL } from "./api";
 
 const PREDICTION_ENDPOINT = "/predict";
+const VALIDATION_FALLBACK_ENDPOINT = "/validate";
 const PRICE_RANGE_RATE = 0.1;
+const FALLBACK_REAL_PRICE = 160000;
+const FALLBACK_PROPERTY_ID = 0;
 
 const initialForm = {
   Bairro: "Centro",
@@ -37,6 +40,75 @@ const initialForm = {
 };
 
 const baseFieldNames = Object.keys(initialForm);
+
+const modelDefaultPayload = {
+  ClasseImovel: "20",
+  ClasseZona: "RL",
+  Fachada: 67,
+  TamanhoLote: 9539.5,
+  FormaProp: "Reg",
+  PlanoProp: "Lvl",
+  ConfigLote: "Inside",
+  InclinacaoLote: "Gtl",
+  Bairro: "Vila Independência",
+  Estrada1: "Norm",
+  Estrada2: "Norm",
+  TipoHabitacao: "1Fam",
+  EstiloHabitacao: "1Story",
+  Qualidade: 6,
+  Condicao: 5,
+  AnoConstrucao: 1970,
+  AnoReforma: 1991,
+  TipoTelhado: "Gable",
+  MaterialTelhado: "CompShg",
+  Exterior1: "VinylSd",
+  Exterior2: "VinylSd",
+  TipoAlvenaria: "Ausente",
+  AreaAlvenaria: 0,
+  QualidadeCobertura: "TA",
+  CondicaoExterna: "TA",
+  TipoFundacao: "CBlock",
+  AlturaPorao: "TA",
+  CondicaoPorao: "TA",
+  ParedePorao: "No",
+  TipoAcabPorao1: "Unf",
+  TipoAcabPorao2: "Unf",
+  AreaPorao: 972,
+  Aquecimento: "GasA",
+  QualidadeAquecimento: "Ex",
+  ArCentral: "Y",
+  InstalacaoEletrica: "SBrkr",
+  AreaConstruida: 1456,
+  BanheiroPorao: 0,
+  LavaboPorao: 0,
+  Banheiro: 2,
+  Lavabo: 0,
+  BedroomAbvGr: 3,
+  KitchenAbvGr: 1,
+  QualidadeCozinha: "TA",
+  Funcionalidade: "Typ",
+  Lareira: 1,
+  QualidadeLareira: "Ausente",
+  LocalGaragem: "Attchd",
+  AcabamentoGaragem: "Unf",
+  CarrosGaragem: 2,
+  QualidadeGaragem: "TA",
+  CondicaoGaragem: "TA",
+  EntradaPavimentada: "Y",
+  AreaDeck: 0,
+  AreaVarandaAberta: 22,
+  AreaVarandaFechada: 0,
+  AreaVaranda3Estacoes: 0,
+  AreaAlpendre: 0,
+  AreaPiscina: 0,
+  QualidadeCerca: "Ausente",
+  ValorOutros: 0,
+  Idade: 38,
+  FoiReformado: 0,
+  area_por_lote: 0.15365942028985508,
+  area_por_quarto: 504,
+  area_por_vaga: 264,
+};
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("pt-BR", {
@@ -333,6 +405,38 @@ function addDerivedFeatures(payload) {
   }
 }
 
+function applyModelDerivedFeatures(payload, explicitPayload) {
+  const derivedValues = {
+    area_por_lote: safeRatio(payload.AreaConstruida, payload.TamanhoLote),
+    area_por_quarto: safeRatio(payload.AreaConstruida, payload.BedroomAbvGr),
+  };
+  const builtYear = toFiniteNumber(payload.AnoConstrucao);
+  const remodelYear = toFiniteNumber(payload.AnoReforma);
+
+  if (builtYear) {
+    derivedValues.Idade = Math.max(
+      new Date().getFullYear() - Math.trunc(builtYear),
+      0
+    );
+  }
+
+  if (builtYear && remodelYear) {
+    derivedValues.FoiReformado = remodelYear > builtYear ? 1 : 0;
+  }
+
+  Object.entries(derivedValues).forEach(([name, value]) => {
+    if (
+      hasPayloadValue(explicitPayload[name]) ||
+      value === null ||
+      value === undefined
+    ) {
+      return;
+    }
+
+    payload[name] = value;
+  });
+}
+
 function buildPayload(form) {
   const payload = Object.fromEntries(
     Object.entries(form)
@@ -346,6 +450,55 @@ function buildPayload(form) {
   addDerivedFeatures(payload);
 
   return payload;
+}
+
+function buildModelPayload(form) {
+  const explicitPayload = buildPayload(form);
+  const payload = { ...modelDefaultPayload, ...explicitPayload };
+
+  applyModelDerivedFeatures(payload, explicitPayload);
+
+  return payload;
+}
+
+async function postJson(path, body) {
+  const response = await fetch(`${API_URL}${path}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error("Não foi possível gerar a previsão.");
+  }
+
+  return response.json();
+}
+
+function toPredictionResult(data) {
+  return {
+    predicted_price: data.predicted_price,
+    model_version: data.model_version,
+    inference_time_ms: data.inference_time_ms,
+  };
+}
+
+async function predictPrice(modelPayload) {
+  try {
+    return toPredictionResult(await postJson(PREDICTION_ENDPOINT, modelPayload));
+  } catch {
+    const fallbackPayload = {
+      ...modelPayload,
+      ImovelId: FALLBACK_PROPERTY_ID,
+      PrecoVenda: FALLBACK_REAL_PRICE,
+    };
+
+    return toPredictionResult(
+      await postJson(VALIDATION_FALLBACK_ENDPOINT, fallbackPayload)
+    );
+  }
 }
 
 function getOptionLabel(name, value) {
@@ -645,6 +798,7 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
 
   const payload = useMemo(() => buildPayload(form), [form]);
+  const modelPayload = useMemo(() => buildModelPayload(form), [form]);
   const activeFieldCount = baseFieldNames.length + selectedOptionalFields.length;
   const availableOptionalFeatures = useMemo(
     () =>
@@ -765,19 +919,7 @@ export default function App() {
     setResult(null);
 
     try {
-      const response = await fetch(`${API_URL}${PREDICTION_ENDPOINT}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        throw new Error("N\u00e3o foi poss\u00edvel gerar a previs\u00e3o.");
-      }
-
-      const data = await response.json();
+      const data = await predictPrice(modelPayload);
       setResult(data);
     } catch (requestError) {
       setError(
