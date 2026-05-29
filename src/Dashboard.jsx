@@ -7,11 +7,9 @@ import {
   Bar, BarChart, Cell, CartesianGrid, ResponsiveContainer,
   Tooltip, XAxis, YAxis,
 } from "recharts";
-
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+import { API_URL } from "./api";
 
 const ENDPOINTS = {
-  total: "/stats/total-requests",
   status: "/stats/status",
   inference: "/stats/inference-time",
   latency: "/stats/latency",
@@ -64,6 +62,10 @@ function Empty({ msg = "Sem dados ainda" }) {
   return <div className="py-6 text-center text-sm font-medium text-slate-400">{msg}</div>;
 }
 
+function getValidationMetrics(validation) {
+  return validation?.so_normais || validation?.todos || {};
+}
+
 function HBar({ data, valueKey, nameKey, color = EMERALD, money = false, height = 280 }) {
   if (!data || data.length === 0) return <Empty />;
   return (
@@ -109,16 +111,17 @@ export default function Dashboard() {
     return () => clearInterval(id);
   }, [load]);
 
-  const total = data.total || {};
   const status = data.status || {};
   const successRate =
     status.success_count != null && (status.success_count + status.error_count) > 0
       ? ((status.success_count / (status.success_count + status.error_count)) * 100).toFixed(1)
       : null;
-  const val = (data.validation && data.validation.so_normais) || (data.validation && data.validation.todos) || {};
+  const val = getValidationMetrics(data.validation);
+  const validationCount = val.n ?? data.validation?.todos?.n ?? null;
   const sys = data.system || {};
   const lat = data.latency || {};
   const dist = data.priceDist || {};
+  const priceDistributionCount = validationCount ?? dist.count;
 
   const bairros = (data.neighborhoods?.ranking || []).map((r) => ({ bairro: r.bairro, count: r.count }));
   const qualidade = (data.quality?.by_quality || []).map((r) => ({ q: `Q${r.qualidade}`, preco: r.avg_price }));
@@ -130,9 +133,9 @@ export default function Dashboard() {
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-ink sm:text-3xl">Dashboard de Uso do Modelo</h1>
+          <h1 className="text-2xl font-bold text-ink sm:text-3xl">Dashboard de Validação do Modelo</h1>
           <p className="mt-1 text-sm text-slate-500">
-            Como a calculadora de preços vem sendo usada — transações, bairros, features e saúde da API.
+            Desempenho validado do modelo — transações, bairros, features e saúde da API.
           </p>
         </div>
         <button
@@ -151,8 +154,8 @@ export default function Dashboard() {
 
       {/* KPIs */}
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Kpi label="Transações" value={fmtNum(total.total_requests)} icon={TrendingUp}
-             hint={total.predict_requests != null ? `${fmtNum(total.predict_requests)} predições · ${fmtNum(total.validate_requests)} validações` : null} />
+        <Kpi label="Transações validadas" value={fmtNum(validationCount)} icon={TrendingUp}
+             hint="somente validações" />
         <Kpi label="Taxa de sucesso" value={successRate ? `${successRate}%` : "—"} icon={Activity} accent="blue"
              hint={status.error_count != null ? `${fmtNum(status.error_count)} erros` : null} />
         <Kpi label="Latência p95" value={lat.p95_ms != null ? `${lat.p95_ms} ms` : "—"} icon={Gauge} accent="blue"
@@ -186,7 +189,7 @@ export default function Dashboard() {
             </ResponsiveContainer>
           )}
         </Card>
-        <Card title="Distribuição dos preços previstos" icon={TrendingUp} subtitle={`${fmtNum(dist.count)} predições`}>
+        <Card title="Distribuição dos preços previstos" icon={TrendingUp} subtitle={`${fmtNum(priceDistributionCount)} validações`}>
           {!dist.count ? <Empty /> : (
             <div className="space-y-3 py-4">
               {[["Mínimo", dist.min], ["P25", dist.p25], ["Mediana", dist.median], ["P75", dist.p75], ["Máximo", dist.max]].map(([k, v]) => (

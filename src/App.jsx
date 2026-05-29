@@ -19,8 +19,9 @@ import {
   Wifi,
   X,
 } from "lucide-react";
+import { API_URL } from "./api";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const PREDICTION_ENDPOINT = "/predict";
 const PRICE_RANGE_RATE = 0.1;
 
 const initialForm = {
@@ -764,7 +765,7 @@ export default function App() {
     setResult(null);
 
     try {
-      const response = await fetch(`${API_URL}/predict`, {
+      const response = await fetch(`${API_URL}${PREDICTION_ENDPOINT}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
