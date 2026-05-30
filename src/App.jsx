@@ -22,10 +22,7 @@ import {
 import { API_URL } from "./api";
 
 const PREDICTION_ENDPOINT = "/predict";
-const VALIDATION_FALLBACK_ENDPOINT = "/validate";
 const PRICE_RANGE_RATE = 0.1;
-const FALLBACK_REAL_PRICE = 160000;
-const FALLBACK_PROPERTY_ID = 0;
 
 const initialForm = {
   Bairro: "Centro",
@@ -465,16 +462,35 @@ async function postJson(path, body) {
   const response = await fetch(`${API_URL}${path}`, {
     method: "POST",
     headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
     },
     body: JSON.stringify(body),
   });
 
-  if (!response.ok) {
-    throw new Error("Não foi possível gerar a previsão.");
+  const responseText = await response.text();
+  let data = null;
+
+  if (responseText) {
+    try {
+      data = JSON.parse(responseText);
+    } catch {
+      data = null;
+    }
   }
 
-  return response.json();
+  if (!response.ok) {
+    const detail =
+      typeof data?.detail === "string"
+        ? data.detail
+        : responseText || `HTTP ${response.status}`;
+
+    throw new Error(
+      `Não foi possível gerar a previsão em ${path} (${response.status}). ${detail}`
+    );
+  }
+
+  return data;
 }
 
 function toPredictionResult(data) {
@@ -486,19 +502,7 @@ function toPredictionResult(data) {
 }
 
 async function predictPrice(modelPayload) {
-  try {
-    return toPredictionResult(await postJson(PREDICTION_ENDPOINT, modelPayload));
-  } catch {
-    const fallbackPayload = {
-      ...modelPayload,
-      ImovelId: FALLBACK_PROPERTY_ID,
-      PrecoVenda: FALLBACK_REAL_PRICE,
-    };
-
-    return toPredictionResult(
-      await postJson(VALIDATION_FALLBACK_ENDPOINT, fallbackPayload)
-    );
-  }
+  return toPredictionResult(await postJson(PREDICTION_ENDPOINT, modelPayload));
 }
 
 function getOptionLabel(name, value) {
