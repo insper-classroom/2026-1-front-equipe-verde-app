@@ -22,10 +22,7 @@ import {
 import { API_URL } from "./api";
 
 const PREDICTION_ENDPOINT = "/predict";
-const VALIDATION_FALLBACK_ENDPOINT = "/validate";
 const PRICE_RANGE_RATE = 0.1;
-const FALLBACK_REAL_PRICE = 160000;
-const FALLBACK_PROPERTY_ID = 0;
 
 const initialForm = {
   Bairro: "Centro",
@@ -505,19 +502,7 @@ function toPredictionResult(data) {
 }
 
 async function predictPrice(modelPayload) {
-  try {
-    return toPredictionResult(await postJson(PREDICTION_ENDPOINT, modelPayload));
-  } catch {
-    const fallbackPayload = {
-      ...modelPayload,
-      ImovelId: FALLBACK_PROPERTY_ID,
-      PrecoVenda: FALLBACK_REAL_PRICE,
-    };
-
-    return toPredictionResult(
-      await postJson(VALIDATION_FALLBACK_ENDPOINT, fallbackPayload)
-    );
-  }
+  return toPredictionResult(await postJson(PREDICTION_ENDPOINT, modelPayload));
 }
 
 function getOptionLabel(name, value) {
