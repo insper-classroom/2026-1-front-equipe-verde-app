@@ -20,10 +20,11 @@ import { API_URL } from "./api";
 
 const PREDICTION_ENDPOINT = "/predict";
 const PRICE_RANGE_RATE = 0.1;
+const M2_TO_FT2 = 10.7639;
 
 const initialForm = {
   Bairro: "Centro",
-  AreaConstruida: 1710,
+  AreaConstruida: 159,
   BedroomAbvGr: 3,
   Banheiro: 2,
   CarrosGaragem: 2,
@@ -93,6 +94,20 @@ const selectOptions = {
   FoiReformado: [
     { value: "1", label: "Sim" },
     { value: "0", label: "N\u00e3o" },
+  ],
+  Qualidade: [
+    { value: "9", label: "Excelente" },
+    { value: "7", label: "Boa" },
+    { value: "5", label: "M\u00e9dia" },
+    { value: "3", label: "Ruim" },
+    { value: "1", label: "P\u00e9ssima" },
+  ],
+  Condicao: [
+    { value: "9", label: "Excelente" },
+    { value: "7", label: "Boa" },
+    { value: "5", label: "M\u00e9dia" },
+    { value: "3", label: "Ruim" },
+    { value: "1", label: "P\u00e9ssima" },
   ],
 };
 
@@ -174,8 +189,8 @@ const fieldMeta = {
     icon: Ruler,
     label: "\u00c1rea constru\u00edda",
     type: "number",
-    min: 699,
-    max: 2804,
+    min: 65,
+    max: 260,
   },
   BedroomAbvGr: { icon: Home, label: "Quartos", type: "number", min: 1, max: 5 },
   Banheiro: { icon: Home, label: "Banheiros", type: "number", min: 1, max: 3 },
@@ -186,20 +201,8 @@ const fieldMeta = {
     min: 0,
     max: 3,
   },
-  Qualidade: {
-    icon: CheckCircle2,
-    label: "Qualidade",
-    type: "number",
-    min: 3,
-    max: 9,
-  },
-  Condicao: {
-    icon: CheckCircle2,
-    label: "Condi\u00e7\u00e3o geral",
-    type: "number",
-    min: 3,
-    max: 9,
-  },
+  Qualidade: { icon: CheckCircle2, label: "Qualidade" },
+  Condicao: { icon: CheckCircle2, label: "Condi\u00e7\u00e3o do im\u00f3vel" },
   Idade: { icon: Home, label: "Idade do im\u00f3vel", type: "number", min: 1, max: 115 },
   QualidadeCozinha: { icon: CheckCircle2, label: "Qualidade da cozinha" },
   FoiReformado: { icon: CheckCircle2, label: "Foi reformado" },
@@ -378,7 +381,11 @@ export default function App() {
     setResult(null);
 
     try {
-      const data = await predictPrice(payload);
+      const apiPayload =
+        payload.AreaConstruida !== undefined
+          ? { ...payload, AreaConstruida: Math.round(payload.AreaConstruida * M2_TO_FT2) }
+          : payload;
+      const data = await predictPrice(apiPayload);
       setResult(data);
     } catch (requestError) {
       setError(
